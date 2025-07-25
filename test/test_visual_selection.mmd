@@ -1,0 +1,22 @@
+graph TD
+    A[Full Document] --> B[Section 1]
+    A --> C[Section 2]
+    A --> D[Section 3]
+    
+    %% Select from here...
+    subgraph "Visual Selection Test"
+        VS[Select These Lines] --> R[Render Selection]
+        R --> P[Preview Result]
+        P --> S[Success!]
+    end
+    %% ...to here and press <leader>mr
+    
+    B --> E[More content below]
+    C --> F[That shouldn't be]
+    D --> G[In the selection]
+
+sequenceDiagram
+    participant Test
+    participant Selection
+    Test->>Selection: Select part of file
+    Selection-->>Test: Render only selection

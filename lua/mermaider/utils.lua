@@ -41,6 +41,18 @@ function M.log_info(msg)
     M.safe_notify("[INFO] " .. msg, vim.log.levels.INFO)
 end
 
+-- Error log function
+-- @param msg string: error message
+function M.log_error(msg)
+    M.safe_notify("[ERROR] " .. msg, vim.log.levels.ERROR)
+end
+
+-- Warning log function
+-- @param msg string: warning message
+function M.log_warn(msg)
+    M.safe_notify("[WARN] " .. msg, vim.log.levels.WARN)
+end
+
 -- Log a message to Neovim command line
 -- @param msg string: the message to display
 -- @param level string|nil: log level (default: "INFO")

@@ -1,0 +1,87 @@
+/* Custom CSS for Mermaid diagrams */
+
+/* Node styling */
+.node rect {
+  fill: #f9f9f9;
+  stroke: #333;
+  stroke-width: 2px;
+  rx: 5px;  /* Rounded corners */
+}
+
+.node text {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 14px;
+  fill: #333;
+}
+
+/* Edge styling */
+.edgePath path {
+  stroke: #666;
+  stroke-width: 2px;
+}
+
+.edgeLabel {
+  background-color: white;
+  padding: 4px;
+  font-size: 12px;
+}
+
+/* Special node classes */
+.node.error rect {
+  fill: #ffcccc !important;
+  stroke: #ff0000 !important;
+}
+
+.node.success rect {
+  fill: #ccffcc !important;
+  stroke: #00cc00 !important;
+}
+
+.node.warning rect {
+  fill: #ffffcc !important;
+  stroke: #ffcc00 !important;
+}
+
+/* Flowchart specific */
+.flowchart-link {
+  stroke: #333;
+  stroke-width: 2px;
+  fill: none;
+}
+
+/* Sequence diagram specific */
+.actor {
+  fill: #e8e8e8;
+  stroke: #333;
+}
+
+.actor-line {
+  stroke: #333;
+  stroke-width: 1px;
+}
+
+.messageLine0 {
+  stroke: #333;
+  stroke-width: 2px;
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .node rect {
+    fill: #2d2d2d;
+    stroke: #d4d4d4;
+  }
+  
+  .node text {
+    fill: #d4d4d4;
+  }
+  
+  .edgePath path {
+    stroke: #888;
+  }
+  
+  .edgeLabel {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+  }
+}

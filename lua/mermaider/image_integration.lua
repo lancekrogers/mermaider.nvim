@@ -79,13 +79,24 @@ function M.render_image(image_path, options)
     utils.log_debug("Creating new image object for buffer " .. buf)
     success, err = pcall(function()
       img = image.from_file(image_path, display_options)
-      img:render()
+      if not img then
+        error("Failed to create image object from file: " .. image_path)
+      end
+      utils.log_debug("Image object created, attempting to render")
+      img:render(display_options)
       M.image_objects[buf] = img
+      utils.log_debug("Image object stored for buffer " .. buf)
     end)
   end
 
   if not success then
     utils.log_error("Failed to render image: " .. tostring(err))
+    -- Try to provide more helpful error messages
+    if err and err:match("kitty") then
+      utils.log_error("Kitty graphics protocol error. Ensure you're using Kitty terminal or configure image.nvim for your terminal.")
+    elseif err and err:match("ueberzug") then
+      utils.log_error("Ueberzugpp error. Ensure ueberzugpp is installed and configured correctly.")
+    end
     return false
   end
 
@@ -149,12 +160,12 @@ function M.render_inline(code_bufnr, image_path, config)
 
   local api = vim.api
   local current_win = api.nvim_get_current_win()
-  local code_bufnr = api.nvim_win_get_buf(current_win)
+  -- Use the passed code_bufnr instead of overwriting it
 
-  -- Calculate the position (after the last line)
+  -- Place image after the last line without modifying the buffer
   local line_count = api.nvim_buf_line_count(code_bufnr)
-  local row = line_count  -- 0-based, places it after the last line
-  local col = 0           -- Start at the beginning of the line
+  local row = line_count  -- Place after the last line (0-based)
+  local col = 0          -- Start at the beginning of the line
 
   -- Calculate image dimensions based on window size
   local win_width  = api.nvim_win_get_width(current_win)
@@ -171,8 +182,13 @@ function M.render_inline(code_bufnr, image_path, config)
     max_width  = max_width,
     max_height = max_height,
     inline = true,
-    with_virtual_padding = true,
+    with_virtual_padding = true,  -- This should create virtual space without modifying the file
   }
+  
+  utils.log_debug(string.format("Inline render position: row=%d, col=%d, win=%d, buf=%d", 
+    row, col, current_win, code_bufnr))
+  utils.log_debug(string.format("Image dimensions: max_width=%d, max_height=%d", 
+    max_width, max_height))
 
   -- Render the image in the code buffer
   local success = M.render_image(image_path, render_image_options)

@@ -22,6 +22,27 @@ function M.build_render_command(config, output_file)
   if config.mmdc_options and config.mmdc_options ~= "" then
     table.insert(options, config.mmdc_options)
   end
+  
+  -- Add CSS file if provided
+  if config.css_file and config.css_file ~= "" then
+    local css_path = vim.fn.expand(config.css_file)
+    if vim.fn.filereadable(css_path) == 1 then
+      table.insert(options, "--cssFile " .. vim.fn.shellescape(css_path))
+    else
+      utils.log_warn("CSS file not found: " .. css_path)
+    end
+  end
+  
+  -- Add mermaid config file if provided
+  if config.mermaid_config_file and config.mermaid_config_file ~= "" then
+    local config_path = vim.fn.expand(config.mermaid_config_file)
+    if vim.fn.filereadable(config_path) == 1 then
+      table.insert(options, "--configFile " .. vim.fn.shellescape(config_path))
+    else
+      utils.log_warn("Mermaid config file not found: " .. config_path)
+    end
+  end
+  
   if #options > 0 then
     cmd = cmd .. " " .. table.concat(options, " ")
   end
@@ -36,6 +57,7 @@ end
 -- @param on_error function: callback for failed execution
 -- @return handle: the process handle
 function M.execute_async(cmd, stdin_content, on_success, on_error)
+  utils.log_debug("Executing command: " .. cmd)
   local stdin = uv.new_pipe(false)
   local stdout = uv.new_pipe(false)
   local stderr = uv.new_pipe(false)
@@ -47,6 +69,9 @@ function M.execute_async(cmd, stdin_content, on_success, on_error)
     args = { "-c", cmd },
     stdio = { stdin, stdout, stderr }
   }, function(code)
+    utils.log_debug("Command completed with code: " .. tostring(code))
+    utils.log_debug("Output length: " .. #output .. ", Error length: " .. #error_output)
+    
     -- Only close handles if they are not already closed
     if stdout:is_closing() == false then stdout:close() end
     if stderr:is_closing() == false then stderr:close() end
@@ -104,6 +129,63 @@ function M.execute_async(cmd, stdin_content, on_success, on_error)
   end)
 
   return handle
+end
+
+-- Parse mermaid CLI error output to provide helpful messages
+-- @param stderr string: error output from mermaid CLI
+-- @return string: parsed error message
+function M.parse_mermaid_error(stderr)
+  if not stderr or stderr == "" then
+    return "Unknown render error"
+  end
+  
+  -- Common mermaid error patterns
+  local patterns = {
+    -- Syntax errors
+    ["Parse error on line (%d+)"] = "Syntax error at line %s",
+    ["Lexical error on line (%d+)"] = "Invalid token at line %s",
+    ["Syntax error in graph"] = "Invalid diagram syntax - check your diagram structure",
+    
+    -- Diagram type errors
+    ["No diagram type detected"] = "Invalid diagram: must start with a valid type (graph, sequenceDiagram, etc.)",
+    ["Unknown diagram type"] = "Unknown diagram type - check supported types in Mermaid documentation",
+    
+    -- Common mistakes
+    ["Duplicate id"] = "Duplicate node ID found - each node must have a unique identifier",
+    ["expected%s*'%%'"] = "Missing %% delimiter - some diagram types require %%%% markers",
+    
+    -- General errors
+    ["Error: (.+)"] = "%s",
+    ["error: (.+)"] = "%s",
+  }
+  
+  -- Check each pattern
+  for pattern, message in pairs(patterns) do
+    local captures = { stderr:match(pattern) }
+    if #captures > 0 then
+      return string.format(message, unpack(captures))
+    end
+  end
+  
+  -- Check for common issues
+  if stderr:match("ENOENT") then
+    return "Mermaid CLI not found - ensure @mermaid-js/mermaid-cli is installed"
+  elseif stderr:match("npm") or stderr:match("npx") then
+    return "NPM/NPX error - check your Node.js installation"
+  elseif stderr:match("puppeteer") then
+    return "Puppeteer error - mermaid-cli requires Chrome/Chromium for rendering"
+  end
+  
+  -- Return cleaned stderr if no pattern matches
+  -- Remove excessive whitespace and newlines
+  local cleaned = stderr:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+  
+  -- Truncate very long errors
+  if #cleaned > 200 then
+    cleaned = cleaned:sub(1, 197) .. "..."
+  end
+  
+  return cleaned
 end
 
 return M
