@@ -162,13 +162,10 @@ function M.render_inline(code_bufnr, image_path, config)
   local current_win = api.nvim_get_current_win()
   -- Use the passed code_bufnr instead of overwriting it
 
-  -- Calculate the position (after the last line)
+  -- Place image after the last line without modifying the buffer
   local line_count = api.nvim_buf_line_count(code_bufnr)
-  
-  -- Use virtual lines instead of modifying the buffer
-  -- Place image at the last line with virtual padding
-  local row = line_count - 1  -- 0-based, so last line
-  local col = 0              -- Start at the beginning of the line
+  local row = line_count  -- Place after the last line (0-based)
+  local col = 0          -- Start at the beginning of the line
 
   -- Calculate image dimensions based on window size
   local win_width  = api.nvim_win_get_width(current_win)
@@ -185,7 +182,7 @@ function M.render_inline(code_bufnr, image_path, config)
     max_width  = max_width,
     max_height = max_height,
     inline = true,
-    with_virtual_padding = true,
+    with_virtual_padding = true,  -- This should create virtual space without modifying the file
   }
   
   utils.log_debug(string.format("Inline render position: row=%d, col=%d, win=%d, buf=%d", 
