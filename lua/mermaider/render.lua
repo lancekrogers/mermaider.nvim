@@ -36,7 +36,16 @@ function M.render_buffer(config, bufnr, callback)
     -- Use cached render
     status.set_status(bufnr, status.STATUS.SUCCESS)
     utils.log_info("Using cached render: " .. cached_path)
-    if callback then callback(true, cached_path) end
+    utils.log_debug("Calling callback with cached path for buffer " .. bufnr)
+    
+    -- Schedule callback to ensure consistent behavior with async renders
+    vim.schedule(function()
+      if callback then 
+        callback(true, cached_path) 
+      else
+        utils.log_debug("No callback provided for cached render")
+      end
+    end)
     return
   end
 
@@ -60,6 +69,9 @@ function M.render_buffer(config, bufnr, callback)
   -- Build the render command
   local cmd = commands.build_render_command(config, output_file)
   cmd = cmd:gsub("{{IN_FILE}}", input_file)
+  
+  utils.log_debug("Rendering buffer " .. bufnr .. " to " .. output_file .. ".png")
+  utils.log_debug("Input file: " .. input_file)
 
   -- Execute the render command
   local on_success = function()
@@ -94,7 +106,13 @@ function M.render_buffer(config, bufnr, callback)
   end
 
   -- Store the job handle
-  active_jobs[bufnr] = commands.execute_async(cmd, nil, on_success, on_error)
+  local job = commands.execute_async(cmd, nil, on_success, on_error)
+  if job then
+    active_jobs[bufnr] = job
+    utils.log_debug("Started render job for buffer " .. bufnr)
+  else
+    utils.log_error("Failed to start render job for buffer " .. bufnr)
+  end
 end
 
 -- Cancel a specific render job

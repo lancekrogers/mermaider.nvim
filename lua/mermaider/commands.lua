@@ -57,6 +57,7 @@ end
 -- @param on_error function: callback for failed execution
 -- @return handle: the process handle
 function M.execute_async(cmd, stdin_content, on_success, on_error)
+  utils.log_debug("Executing command: " .. cmd)
   local stdin = uv.new_pipe(false)
   local stdout = uv.new_pipe(false)
   local stderr = uv.new_pipe(false)
@@ -68,6 +69,9 @@ function M.execute_async(cmd, stdin_content, on_success, on_error)
     args = { "-c", cmd },
     stdio = { stdin, stdout, stderr }
   }, function(code)
+    utils.log_debug("Command completed with code: " .. tostring(code))
+    utils.log_debug("Output length: " .. #output .. ", Error length: " .. #error_output)
+    
     -- Only close handles if they are not already closed
     if stdout:is_closing() == false then stdout:close() end
     if stderr:is_closing() == false then stderr:close() end

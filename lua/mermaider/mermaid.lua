@@ -16,6 +16,8 @@ local ui = require("mermaider.ui")
 -- @param image_path string: path to the rendered image
 -- @param config table: plugin configuration
 function M.preview_diagram(bufnr, image_path, config)
+  utils.log_debug("preview_diagram called for buffer " .. bufnr .. " with image: " .. image_path)
+  
   if not files.file_exists(image_path) then
     utils.safe_notify("No rendered diagram found. Try running MermaiderRender first.", vim.log.levels.ERROR)
     return
@@ -23,6 +25,7 @@ function M.preview_diagram(bufnr, image_path, config)
 
   vim.schedule(function()
     if config.inline_render then
+      utils.log_debug("Attempting inline render for buffer " .. bufnr)
       if image_integration.render_inline(bufnr, image_path, config) then
         utils.safe_notify("Diagram rendered inline with image.nvim", vim.log.levels.INFO)
       else
