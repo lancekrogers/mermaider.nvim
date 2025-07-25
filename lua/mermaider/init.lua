@@ -41,6 +41,10 @@ function M.setup(opts)
   end, { desc = "Toggle mermaid preview", silent = true })
 
   M.setup_autocmds()
+  
+  -- Load debug module if available
+  pcall(require, "mermaider.debug_image")
+  
   utils.safe_notify("Mermaider plugin loaded with image.nvim", vim.log.levels.INFO)
 end
 

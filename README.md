@@ -15,6 +15,10 @@ A Neovim plugin for rendering [Mermaid.js](https://mermaid.js.org/) diagrams dir
 
 - npx (for mermaid-cli)
 - [image.nvim](https://github.com/3rd/image.nvim)
+- ImageMagick (required by image.nvim for image processing)
+  - macOS: `brew install imagemagick`
+  - Ubuntu/Debian: `sudo apt-get install imagemagick`
+  - Arch: `sudo pacman -S imagemagick`
 
 ## Installation
 

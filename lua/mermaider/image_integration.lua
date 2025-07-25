@@ -79,13 +79,24 @@ function M.render_image(image_path, options)
     utils.log_debug("Creating new image object for buffer " .. buf)
     success, err = pcall(function()
       img = image.from_file(image_path, display_options)
+      if not img then
+        error("Failed to create image object from file: " .. image_path)
+      end
+      utils.log_debug("Image object created, attempting to render")
       img:render()
       M.image_objects[buf] = img
+      utils.log_debug("Image object stored for buffer " .. buf)
     end)
   end
 
   if not success then
     utils.log_error("Failed to render image: " .. tostring(err))
+    -- Try to provide more helpful error messages
+    if err and err:match("kitty") then
+      utils.log_error("Kitty graphics protocol error. Ensure you're using Kitty terminal or configure image.nvim for your terminal.")
+    elseif err and err:match("ueberzug") then
+      utils.log_error("Ueberzugpp error. Ensure ueberzugpp is installed and configured correctly.")
+    end
     return false
   end
 
@@ -149,7 +160,7 @@ function M.render_inline(code_bufnr, image_path, config)
 
   local api = vim.api
   local current_win = api.nvim_get_current_win()
-  local code_bufnr = api.nvim_win_get_buf(current_win)
+  -- Use the passed code_bufnr instead of overwriting it
 
   -- Calculate the position (after the last line)
   local line_count = api.nvim_buf_line_count(code_bufnr)
