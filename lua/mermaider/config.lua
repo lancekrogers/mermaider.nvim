@@ -16,6 +16,7 @@ M.defaults = {
   mmdc_options                 = "",
   max_width_window_percentage  = 80,
   max_height_window_percentage = 80,
+  throttle_delay               = 500,        -- Delay in milliseconds for auto-render throttling
 
   -- Render settings
   inline_render                = true,       -- Use inline rendering instead of split window
@@ -42,6 +43,11 @@ function M.validate(config)
     result.max_height_window_percentage <= 0 or result.max_height_window_percentage > 100) then
     vim.notify("[Mermaider] Invalid max_height_window_percentage, using default 80", vim.log.levels.WARN)
     result.max_height_window_percentage = 80
+  end
+
+  if result.throttle_delay and (type(result.throttle_delay) ~= "number" or result.throttle_delay < 0) then
+    vim.notify("[Mermaider] Invalid throttle_delay, using default 500ms", vim.log.levels.WARN)
+    result.throttle_delay = 500
   end
 
   return result

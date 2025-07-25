@@ -1,0 +1,24 @@
+graph TD
+    A[Phase 1 Test] --> B[Path Hashing]
+    A --> C[Content Caching]
+    A --> D[Error Messages]
+    A --> E[Throttle Config]
+    
+    B --> B1[SHA256 Hash]
+    B --> B2[No Collisions]
+    
+    C --> C1[Cache Hit]
+    C --> C2[Cache Miss]
+    C --> C3[Cache Stats]
+    
+    D --> D1[Parse Errors]
+    D --> D2[Helpful Messages]
+    
+    E --> E1[Configurable]
+    E --> E2[Validated]
+
+    style A fill:#f9f,stroke:#333,stroke-width:4px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#bbf,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#bbf,stroke:#333,stroke-width:2px

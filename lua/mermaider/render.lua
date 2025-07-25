@@ -8,6 +8,7 @@ local files = require("mermaider.files")
 local commands = require("mermaider.commands")
 local status = require("mermaider.status")
 local utils = require("mermaider.utils")
+local cache = require("mermaider.cache")
 
 -- Table to keep track of active render jobs
 local active_jobs = {}
@@ -19,6 +20,20 @@ local active_jobs = {}
 function M.render_buffer(config, bufnr, callback)
   if not api.nvim_buf_is_valid(bufnr) then
     utils.safe_notify("Invalid buffer: " .. bufnr, vim.log.levels.ERROR)
+    return
+  end
+
+  -- Get buffer content for caching
+  local buffer_lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local content_hash = cache.get_content_hash(buffer_lines)
+  
+  -- Check cache first
+  local cached_path = cache.check_cache(content_hash, config)
+  if cached_path then
+    -- Use cached render
+    status.set_status(bufnr, status.STATUS.SUCCESS)
+    utils.log_info("Using cached render: " .. cached_path)
+    if callback then callback(true, cached_path) end
     return
   end
 
@@ -48,6 +63,11 @@ function M.render_buffer(config, bufnr, callback)
     if files.file_exists(output_file .. ".png") then
       status.set_status(bufnr, status.STATUS.SUCCESS)
       utils.log_info("Rendered diagram to " .. output_file .. ".png")
+      
+      -- Update cache with the new render
+      local source_path = api.nvim_buf_get_name(bufnr)
+      cache.update_cache(content_hash, output_file .. ".png", source_path, config)
+      
       if callback then callback(true, output_file .. ".png") end
     else
       status.set_status(bufnr, status.STATUS.ERROR, "Output file not generated")
@@ -56,10 +76,13 @@ function M.render_buffer(config, bufnr, callback)
     end
   end
 
-  local on_error = function(error_output)
+  local on_error = function(error_output, cmd_used)
     status.set_status(bufnr, status.STATUS.ERROR, "Render failed")
-    utils.safe_notify("Render failed: " .. error_output, vim.log.levels.ERROR)
-    if callback then callback(false, error_output) end
+    local parsed_error = commands.parse_mermaid_error(error_output)
+    utils.safe_notify("Render failed: " .. parsed_error, vim.log.levels.ERROR)
+    utils.log_debug("Full error output: " .. error_output)
+    utils.log_debug("Command used: " .. (cmd_used or "unknown"))
+    if callback then callback(false, parsed_error) end
   end
 
   -- Store the job handle

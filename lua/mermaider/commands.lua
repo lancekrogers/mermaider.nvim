@@ -106,4 +106,61 @@ function M.execute_async(cmd, stdin_content, on_success, on_error)
   return handle
 end
 
+-- Parse mermaid CLI error output to provide helpful messages
+-- @param stderr string: error output from mermaid CLI
+-- @return string: parsed error message
+function M.parse_mermaid_error(stderr)
+  if not stderr or stderr == "" then
+    return "Unknown render error"
+  end
+  
+  -- Common mermaid error patterns
+  local patterns = {
+    -- Syntax errors
+    ["Parse error on line (%d+)"] = "Syntax error at line %s",
+    ["Lexical error on line (%d+)"] = "Invalid token at line %s",
+    ["Syntax error in graph"] = "Invalid diagram syntax - check your diagram structure",
+    
+    -- Diagram type errors
+    ["No diagram type detected"] = "Invalid diagram: must start with a valid type (graph, sequenceDiagram, etc.)",
+    ["Unknown diagram type"] = "Unknown diagram type - check supported types in Mermaid documentation",
+    
+    -- Common mistakes
+    ["Duplicate id"] = "Duplicate node ID found - each node must have a unique identifier",
+    ["expected%s*'%%'"] = "Missing %% delimiter - some diagram types require %%%% markers",
+    
+    -- General errors
+    ["Error: (.+)"] = "%s",
+    ["error: (.+)"] = "%s",
+  }
+  
+  -- Check each pattern
+  for pattern, message in pairs(patterns) do
+    local captures = { stderr:match(pattern) }
+    if #captures > 0 then
+      return string.format(message, unpack(captures))
+    end
+  end
+  
+  -- Check for common issues
+  if stderr:match("ENOENT") then
+    return "Mermaid CLI not found - ensure @mermaid-js/mermaid-cli is installed"
+  elseif stderr:match("npm") or stderr:match("npx") then
+    return "NPM/NPX error - check your Node.js installation"
+  elseif stderr:match("puppeteer") then
+    return "Puppeteer error - mermaid-cli requires Chrome/Chromium for rendering"
+  end
+  
+  -- Return cleaned stderr if no pattern matches
+  -- Remove excessive whitespace and newlines
+  local cleaned = stderr:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+  
+  -- Truncate very long errors
+  if #cleaned > 200 then
+    cleaned = cleaned:sub(1, 197) .. "..."
+  end
+  
+  return cleaned
+end
+
 return M

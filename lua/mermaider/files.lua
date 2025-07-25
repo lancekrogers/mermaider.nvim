@@ -9,6 +9,16 @@ local utils = require("mermaider.utils")
 -- Path separator for current OS
 local path_sep = package.config:sub(1, 1)
 
+-- Generate a SHA256 hash of a string
+-- @param str string: input string to hash
+-- @return string: first 16 characters of the hash
+local function hash_string(str)
+  -- Use Neovim's built-in SHA256 function
+  local hash = vim.fn.sha256(str)
+  -- Return first 16 characters for reasonable length
+  return hash:sub(1, 16)
+end
+
 -- Generate a temporary file path for a buffer
 -- @param config table: plugin configuration
 -- @param bufnr number: buffer id
@@ -20,21 +30,26 @@ function M.get_temp_file_path(config, bufnr)
 
   -- Generate a hash based on the absolute path
   local abs_path = fn.fnamemodify(buf_name, ":p")
-  local hash_sum = 0
-
-  -- Convert the absolute path to a stable hash
-  for i = 1, #abs_path do
-    hash_sum = hash_sum + string.byte(abs_path, i)
-  end
-  local hash_str = tostring(hash_sum)
+  local path_hash = hash_string(abs_path)
 
   -- Ensure temp directory exists
   fn.mkdir(config.temp_dir, "p")
 
-  -- Create full temporary file path
-  local temp_path = config.temp_dir .. path_sep .. file_name .. "_" .. hash_str
+  -- Create full temporary file path with better naming
+  -- Format: originalname_pathhash to maintain readability
+  local temp_path = config.temp_dir .. path_sep .. file_name .. "_" .. path_hash
 
   return temp_path
+end
+
+-- Get cache path for a specific file (used by cache module)
+-- @param filepath string: absolute path to the file
+-- @param config table: plugin configuration
+-- @return string: cache path for the file
+function M.get_cache_path_for_file(filepath, config)
+  local file_name = fn.fnamemodify(filepath, ":t:r")
+  local path_hash = hash_string(filepath)
+  return config.temp_dir .. path_sep .. file_name .. "_" .. path_hash
 end
 
 -- Write buffer content to a temporary file

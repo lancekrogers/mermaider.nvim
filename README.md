@@ -7,9 +7,11 @@ A Neovim plugin for rendering [Mermaid.js](https://mermaid.js.org/) diagrams dir
 ## Features
 
 - Auto-renders diagrams on save or when requested
+- Content-based caching to avoid re-rendering unchanged diagrams
 - Displays diagrams using [image.nvim](https://github.com/3rd/image.nvim) for in-editor visualization
 - Inline rendering mode lets you toggle between code and diagram view
 - Traditional split-window view option for side-by-side editing
+- Clear error messages with helpful suggestions
 
 ## Requirements
 
@@ -72,6 +74,9 @@ require("mermaider").setup({
   max_width_window_percentage = 80,    -- Maximum width as percentage of window
   max_height_window_percentage = 80,   -- Maximum height as percentage of window
 
+  -- Performance settings
+  throttle_delay = 500,            -- Delay in milliseconds for auto-render throttling
+
   -- Render settings
   inline_render = true,            -- Use inline rendering instead of split window
 
@@ -93,6 +98,9 @@ The plugin automatically recognizes files with `.mmd` and `.mermaid` extensions.
 - `:MermaiderRender` - Render the current mermaid diagram
 - `:MermaiderPreview` - Preview the rendered diagram (inline or in split window based on configuration)
 - `:MermaiderToggle` - Toggle between code view and diagram view when using inline rendering
+- `:MermaiderCacheClear` - Clear all cached renders
+- `:MermaiderCacheStats` - Show cache statistics
+- `:MermaiderDebugImage` - Debug image.nvim integration
 
 ### Keybindings
 

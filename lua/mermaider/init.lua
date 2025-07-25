@@ -40,6 +40,24 @@ function M.setup(opts)
     vim.cmd('MermaiderToggle')
   end, { desc = "Toggle mermaid preview", silent = true })
 
+  -- Cache management commands
+  api.nvim_create_user_command("MermaiderCacheClear", function()
+    require("mermaider.cache").clear_all(M.config)
+  end, { desc = "Clear all cached renders" })
+
+  api.nvim_create_user_command("MermaiderCacheStats", function()
+    local stats = require("mermaider.cache").get_stats(M.config)
+    local lines = {
+      string.format("Total entries: %d", stats.total_entries),
+      string.format("Valid entries: %d", stats.valid_entries),
+      string.format("Total size: %.2f MB", stats.total_size / 1024 / 1024),
+    }
+    if stats.oldest_entry then
+      lines[#lines + 1] = string.format("Oldest entry: %s", os.date("%Y-%m-%d %H:%M", stats.oldest_entry))
+    end
+    vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Mermaider Cache" })
+  end, { desc = "Show cache statistics" })
+
   M.setup_autocmds()
   
   -- Load debug module if available
@@ -73,7 +91,7 @@ function M.setup_autocmds()
       pattern = { "*.mmd", "*.mermaid" },
       callback = utils.throttle(function()
         M.render_current_buffer()
-      end, 500), -- Throttle to 500ms
+      end, M.config.throttle_delay),
     })
   end
 
