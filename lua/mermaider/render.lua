@@ -63,28 +63,34 @@ function M.render_buffer(config, bufnr, callback)
 
   -- Execute the render command
   local on_success = function()
-    if files.file_exists(output_file .. ".png") then
-      status.set_status(bufnr, status.STATUS.SUCCESS)
-      utils.log_info("Rendered diagram to " .. output_file .. ".png")
-      
-      -- Update cache with the new render (source_path captured before async)
-      cache.update_cache(content_hash, output_file .. ".png", source_path, config)
-      
-      if callback then callback(true, output_file .. ".png") end
-    else
-      status.set_status(bufnr, status.STATUS.ERROR, "Output file not generated")
-      utils.safe_notify("Output file not generated after rendering", vim.log.levels.ERROR)
-      if callback then callback(false, "Output file not generated") end
-    end
+    -- Schedule to avoid fast event context
+    vim.schedule(function()
+      if files.file_exists(output_file .. ".png") then
+        status.set_status(bufnr, status.STATUS.SUCCESS)
+        utils.log_info("Rendered diagram to " .. output_file .. ".png")
+        
+        -- Update cache with the new render (source_path captured before async)
+        cache.update_cache(content_hash, output_file .. ".png", source_path, config)
+        
+        if callback then callback(true, output_file .. ".png") end
+      else
+        status.set_status(bufnr, status.STATUS.ERROR, "Output file not generated")
+        utils.safe_notify("Output file not generated after rendering", vim.log.levels.ERROR)
+        if callback then callback(false, "Output file not generated") end
+      end
+    end)
   end
 
   local on_error = function(error_output, cmd_used)
-    status.set_status(bufnr, status.STATUS.ERROR, "Render failed")
-    local parsed_error = commands.parse_mermaid_error(error_output)
-    utils.safe_notify("Render failed: " .. parsed_error, vim.log.levels.ERROR)
-    utils.log_debug("Full error output: " .. error_output)
-    utils.log_debug("Command used: " .. (cmd_used or "unknown"))
-    if callback then callback(false, parsed_error) end
+    -- Schedule to avoid fast event context
+    vim.schedule(function()
+      status.set_status(bufnr, status.STATUS.ERROR, "Render failed")
+      local parsed_error = commands.parse_mermaid_error(error_output)
+      utils.safe_notify("Render failed: " .. parsed_error, vim.log.levels.ERROR)
+      utils.log_debug("Full error output: " .. error_output)
+      utils.log_debug("Command used: " .. (cmd_used or "unknown"))
+      if callback then callback(false, parsed_error) end
+    end)
   end
 
   -- Store the job handle
