@@ -135,14 +135,17 @@ function M.render_all_blocks(bufnr, config, render_fn)
     local render_result = nil
     
     render_fn(config, temp_bufnr, function(success, result)
-      render_complete = true
-      render_result = {
-        success = success,
-        result = result,
-        block = block,
-        block_id = block_id,
-        temp_bufnr = temp_bufnr,
-      }
+      -- Use vim.schedule to ensure we're not in a fast event context
+      vim.schedule(function()
+        render_complete = true
+        render_result = {
+          success = success,
+          result = result,
+          block = block,
+          block_id = block_id,
+          temp_bufnr = temp_bufnr,
+        }
+      end)
     end)
     
     -- Wait for render to complete (with timeout)
@@ -156,7 +159,11 @@ function M.render_all_blocks(bufnr, config, render_fn)
     
     -- Clean up temp buffer
     if api.nvim_buf_is_valid(temp_bufnr) then
-      api.nvim_buf_delete(temp_bufnr, { force = true })
+      vim.schedule(function()
+        if api.nvim_buf_is_valid(temp_bufnr) then
+          api.nvim_buf_delete(temp_bufnr, { force = true })
+        end
+      end)
     end
   end
   

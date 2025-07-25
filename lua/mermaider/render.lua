@@ -27,6 +27,9 @@ function M.render_buffer(config, bufnr, callback)
   local buffer_lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local content_hash = cache.get_content_hash(buffer_lines)
   
+  -- Get source path before async operation
+  local source_path = api.nvim_buf_get_name(bufnr)
+  
   -- Check cache first
   local cached_path = cache.check_cache(content_hash, config)
   if cached_path then
@@ -64,8 +67,7 @@ function M.render_buffer(config, bufnr, callback)
       status.set_status(bufnr, status.STATUS.SUCCESS)
       utils.log_info("Rendered diagram to " .. output_file .. ".png")
       
-      -- Update cache with the new render
-      local source_path = api.nvim_buf_get_name(bufnr)
+      -- Update cache with the new render (source_path captured before async)
       cache.update_cache(content_hash, output_file .. ".png", source_path, config)
       
       if callback then callback(true, output_file .. ".png") end
