@@ -1,0 +1,57 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#f9f9f9",
+    "primaryTextColor": "#333",
+    "primaryBorderColor": "#333",
+    "lineColor": "#666",
+    "secondaryColor": "#e8e8e8",
+    "tertiaryColor": "#d4d4d4",
+    "background": "#fff",
+    "mainBkg": "#f9f9f9",
+    "secondBkg": "#e8e8e8",
+    "tertiaryBkg": "#d4d4d4",
+    "fontFamily": "JetBrains Mono, monospace",
+    "fontSize": "14px",
+    "darkMode": false
+  },
+  "flowchart": {
+    "curve": "basis",
+    "padding": 15,
+    "nodeSpacing": 50,
+    "rankSpacing": 50,
+    "diagramPadding": 8,
+    "useMaxWidth": true,
+    "htmlLabels": true
+  },
+  "sequence": {
+    "diagramMarginX": 50,
+    "diagramMarginY": 10,
+    "actorMargin": 50,
+    "width": 150,
+    "height": 65,
+    "boxMargin": 10,
+    "boxTextMargin": 5,
+    "noteMargin": 10,
+    "messageMargin": 35,
+    "mirrorActors": true,
+    "bottomMarginAdj": 1,
+    "useMaxWidth": true,
+    "rightAngles": false
+  },
+  "er": {
+    "diagramPadding": 20,
+    "layoutDirection": "TB",
+    "minEntityWidth": 100,
+    "minEntityHeight": 75,
+    "entityPadding": 15,
+    "stroke": "gray",
+    "fill": "honeydew",
+    "fontSize": 12,
+    "useMaxWidth": true
+  },
+  "gitGraph": {
+    "mainBranchName": "main",
+    "rotateCommitLabel": true
+  }
+}

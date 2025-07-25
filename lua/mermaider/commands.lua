@@ -22,6 +22,27 @@ function M.build_render_command(config, output_file)
   if config.mmdc_options and config.mmdc_options ~= "" then
     table.insert(options, config.mmdc_options)
   end
+  
+  -- Add CSS file if provided
+  if config.css_file and config.css_file ~= "" then
+    local css_path = vim.fn.expand(config.css_file)
+    if vim.fn.filereadable(css_path) == 1 then
+      table.insert(options, "--cssFile " .. vim.fn.shellescape(css_path))
+    else
+      utils.log_warn("CSS file not found: " .. css_path)
+    end
+  end
+  
+  -- Add mermaid config file if provided
+  if config.mermaid_config_file and config.mermaid_config_file ~= "" then
+    local config_path = vim.fn.expand(config.mermaid_config_file)
+    if vim.fn.filereadable(config_path) == 1 then
+      table.insert(options, "--configFile " .. vim.fn.shellescape(config_path))
+    else
+      utils.log_warn("Mermaid config file not found: " .. config_path)
+    end
+  end
+  
   if #options > 0 then
     cmd = cmd .. " " .. table.concat(options, " ")
   end

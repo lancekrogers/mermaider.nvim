@@ -1,5 +1,35 @@
 # Changelog
 
+## Phase 2 - Core Features
+
+### Added
+- **Markdown Integration**: Full support for rendering mermaid code blocks in markdown files
+  - Auto-detect and render mermaid blocks on save/open
+  - `:MermaiderRenderBlock` command to render block at cursor
+  - `:MermaiderRenderAllBlocks` command to render all blocks in file
+  - Inline image display below code blocks
+  - Proper cleanup when leaving buffer
+- **Visual Selection Rendering**: Render any selected text as a mermaid diagram
+  - `:MermaiderRenderSelection` command (works in visual mode)
+  - `<leader>mr` keybinding in visual mode
+  - Useful for testing diagram snippets or rendering parts of larger files
+- **Custom CSS Styling**: Apply custom styles to diagrams
+  - `css_file` config option for custom CSS
+  - `mermaid_config_file` option for mermaid configuration
+  - Example files provided in `examples/` directory
+  - Validation to ensure files exist before use
+
+### Improved
+- **Command Organization**: Commands now grouped by category in documentation
+- **File Type Support**: Extended beyond just `.mmd` files to include markdown
+- **Module Structure**: Added dedicated `markdown.lua` module for clean separation
+
+### Technical Details
+- Markdown blocks tracked by line numbers for accurate positioning
+- Temporary buffers created for each mermaid block with unique naming
+- Visual selection creates ephemeral buffers that auto-cleanup
+- CSS and config files expanded and validated before passing to mermaid CLI
+
 ## Phase 1 - Foundation Improvements
 
 ### Fixed

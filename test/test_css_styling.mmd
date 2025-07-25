@@ -1,0 +1,19 @@
+graph TD
+    A[Normal Node] --> B[Another Node]
+    B --> C[Success Node]:::success
+    B --> D[Error Node]:::error
+    B --> E[Warning Node]:::warning
+    
+    C --> F{Decision}
+    D --> F
+    E --> F
+    
+    F -->|Good| G[Continue]
+    F -->|Bad| H[Stop]
+    
+    %% Test custom CSS classes
+    classDef success fill:#ccffcc,stroke:#00cc00,stroke-width:3px
+    classDef error fill:#ffcccc,stroke:#ff0000,stroke-width:3px
+    classDef warning fill:#ffffcc,stroke:#ffcc00,stroke-width:3px
+    
+    %% This diagram should look different with custom CSS

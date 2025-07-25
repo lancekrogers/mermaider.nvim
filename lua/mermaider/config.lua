@@ -25,6 +25,10 @@ M.defaults = {
   use_split                    = true,       -- Use a split window to show diagram
   split_direction              = "vertical", -- "vertical" or "horizontal"
   split_width                  = 50,         -- Width of the split (if vertical)
+
+  -- Custom styling
+  css_file                     = nil,        -- Path to custom CSS file
+  mermaid_config_file          = nil,        -- Path to mermaid config JSON file
 }
 
 -- Validate configuration

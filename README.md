@@ -12,6 +12,9 @@ A Neovim plugin for rendering [Mermaid.js](https://mermaid.js.org/) diagrams dir
 - Inline rendering mode lets you toggle between code and diagram view
 - Traditional split-window view option for side-by-side editing
 - Clear error messages with helpful suggestions
+- **Markdown support** - Render mermaid code blocks in `.md` files
+- **Visual selection rendering** - Render selected text as a diagram
+- **Custom CSS styling** - Apply your own styles to diagrams
 
 ## Requirements
 
@@ -84,6 +87,10 @@ require("mermaider").setup({
   use_split = true,                -- Use a split window to show diagram
   split_direction = "vertical",    -- "vertical" or "horizontal"
   split_width = 50,                -- Width of the split (if vertical)
+
+  -- Custom styling
+  css_file = nil,                  -- Path to custom CSS file for styling
+  mermaid_config_file = nil,       -- Path to mermaid config JSON file
 })
 ```
 
@@ -91,22 +98,48 @@ require("mermaider").setup({
 
 ### File Types
 
-The plugin automatically recognizes files with `.mmd` and `.mermaid` extensions.
+The plugin automatically recognizes:
+- `.mmd` and `.mermaid` files - Renders entire file
+- `.md` and `.markdown` files - Renders mermaid code blocks
 
 ### Commands
 
+#### General Commands
 - `:MermaiderRender` - Render the current mermaid diagram
 - `:MermaiderPreview` - Preview the rendered diagram (inline or in split window based on configuration)
 - `:MermaiderToggle` - Toggle between code view and diagram view when using inline rendering
+
+#### Markdown Commands
+- `:MermaiderRenderBlock` - Render mermaid block at cursor position (markdown files)
+- `:MermaiderRenderAllBlocks` - Render all mermaid blocks in current markdown file
+- `:MermaiderRenderSelection` - Render selected text as mermaid diagram (visual mode)
+
+#### Cache Commands
 - `:MermaiderCacheClear` - Clear all cached renders
 - `:MermaiderCacheStats` - Show cache statistics
+
+#### Debug Commands
 - `:MermaiderDebugImage` - Debug image.nvim integration
 
 ### Keybindings
 
-The plugin provides one default keybinding:
+The plugin provides these default keybindings:
 
-- `<leader>mt` - Toggle between code and diagram view (same as `:MermaiderToggle`)
+- `<leader>mt` (normal mode) - Toggle between code and diagram view (same as `:MermaiderToggle`)
+- `<leader>mr` (visual mode) - Render selected text as mermaid diagram
+
+## Custom Styling
+
+You can customize the appearance of your diagrams using CSS:
+
+```lua
+require("mermaider").setup({
+  css_file = "~/my-mermaid-styles.css",
+  mermaid_config_file = "~/my-mermaid-config.json",
+})
+```
+
+See `examples/custom.css` and `examples/mermaid.config.json` for examples.
 
 ## License
 
