@@ -83,7 +83,7 @@ function M.render_image(image_path, options)
         error("Failed to create image object from file: " .. image_path)
       end
       utils.log_debug("Image object created, attempting to render")
-      img:render()
+      img:render(display_options)
       M.image_objects[buf] = img
       utils.log_debug("Image object stored for buffer " .. buf)
     end)
@@ -164,8 +164,11 @@ function M.render_inline(code_bufnr, image_path, config)
 
   -- Calculate the position (after the last line)
   local line_count = api.nvim_buf_line_count(code_bufnr)
-  local row = line_count  -- 0-based, places it after the last line
-  local col = 0           -- Start at the beginning of the line
+  
+  -- Use virtual lines instead of modifying the buffer
+  -- Place image at the last line with virtual padding
+  local row = line_count - 1  -- 0-based, so last line
+  local col = 0              -- Start at the beginning of the line
 
   -- Calculate image dimensions based on window size
   local win_width  = api.nvim_win_get_width(current_win)
@@ -184,6 +187,11 @@ function M.render_inline(code_bufnr, image_path, config)
     inline = true,
     with_virtual_padding = true,
   }
+  
+  utils.log_debug(string.format("Inline render position: row=%d, col=%d, win=%d, buf=%d", 
+    row, col, current_win, code_bufnr))
+  utils.log_debug(string.format("Image dimensions: max_width=%d, max_height=%d", 
+    max_width, max_height))
 
   -- Render the image in the code buffer
   local success = M.render_image(image_path, render_image_options)
