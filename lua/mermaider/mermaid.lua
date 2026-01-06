@@ -38,10 +38,12 @@ function M.preview_diagram(bufnr, image_path, config)
 
       local win_width = api.nvim_win_get_width(preview_win)
       local win_height = api.nvim_win_get_height(preview_win)
-      local image_width = win_width * 10
-      local image_height = win_height * 20
-
-      api.nvim_buf_set_lines(preview_buf, 0, -1, false, { "" })
+      -- Use actual window dimensions in cells/characters
+      local image_width = win_width - 2  -- Leave a small margin
+      local image_height = win_height - 2
+      
+      -- Don't clear the buffer - this might interfere with image display
+      -- api.nvim_buf_set_lines(preview_buf, 0, -1, false, { "" })
 
       local options = {
         buffer = preview_buf,

@@ -73,6 +73,11 @@ function M.setup(opts)
   api.nvim_create_user_command("MermaiderRenderAllBlocks", function()
     M.render_all_markdown_blocks()
   end, { desc = "Render all mermaid blocks in markdown file" })
+  
+  api.nvim_create_user_command("MermaiderViewBlock", function()
+    local bufnr = api.nvim_get_current_buf()
+    markdown.view_block_at_cursor(bufnr)
+  end, { desc = "View rendered mermaid block at cursor position" })
 
   -- Visual selection rendering
   api.nvim_create_user_command("MermaiderRenderSelection", function(opts)
@@ -244,10 +249,13 @@ function M.render_all_markdown_blocks()
   local results = markdown.render_all_blocks(bufnr, M.config, render.render_buffer)
   
   local success_count = 0
-  for _, result in ipairs(results) do
+  for i, result in ipairs(results) do
     if result.success then
       success_count = success_count + 1
-      markdown.add_inline_image(bufnr, result.block, result.result)
+      -- Add a small delay between rendering multiple images
+      vim.defer_fn(function()
+        markdown.add_inline_image(bufnr, result.block, result.result)
+      end, i * 100) -- Stagger by 100ms per image
     end
   end
   

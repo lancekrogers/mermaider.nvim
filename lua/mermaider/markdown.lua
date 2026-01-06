@@ -174,7 +174,7 @@ end
 local md_namespace = api.nvim_create_namespace("mermaider_markdown")
 
 -- Store rendered image info for markdown buffers
--- Format: { [bufnr] = { [block_id] = { extmark_id, image_path } } }
+-- Format: { [bufnr] = { [block_id] = { image_path } } }
 local markdown_renders = {}
 
 -- Add rendered image below mermaid block
@@ -188,49 +188,36 @@ function M.add_inline_image(bufnr, block, image_path)
   end
   
   local block_id = M.get_block_id(bufnr, block)
-  
-  -- Remove old extmark if exists
-  if markdown_renders[bufnr][block_id] then
-    local old_id = markdown_renders[bufnr][block_id].extmark_id
-    pcall(api.nvim_buf_del_extmark, bufnr, md_namespace, old_id)
-  end
-  
-  -- Add extmark after the closing ```
-  local extmark_id = api.nvim_buf_set_extmark(bufnr, md_namespace, block.end_line - 1, 0, {
-    virt_lines = {{ { "", "MermaidRendered" } }},
-    virt_lines_above = false,
-  })
-  
   markdown_renders[bufnr][block_id] = {
-    extmark_id = extmark_id,
     image_path = image_path,
     block = block,
   }
   
-  -- Now render the actual image using image.nvim integration
+  -- Use the image_integration module to display the image inline
   local image_integration = require("mermaider.image_integration")
-  local current_win = api.nvim_get_current_win()
-  
-  -- Calculate position (after the code block)
-  local render_options = {
-    window = current_win,
-    buffer = bufnr,
-    x = 0,
-    y = block.end_line, -- After the closing ```
-    max_width = 100,    -- Will be calculated based on window
-    max_height = 50,
-    inline = true,
-    with_virtual_padding = true,
-  }
-  
-  -- Let image_integration calculate proper dimensions
   local config = require("mermaider").config
-  local win_width = api.nvim_win_get_width(current_win)
-  local win_height = api.nvim_win_get_height(current_win)
-  render_options.max_width = math.floor(win_width * (config.max_width_window_percentage / 100))
-  render_options.max_height = math.floor(win_height * (config.max_height_window_percentage / 100))
   
-  image_integration.render_image(image_path, render_options)
+  -- For markdown, render inline at the block position
+  if config.inline_render then
+    -- Place image after the closing ```
+    local render_options = {
+      window = api.nvim_get_current_win(),
+      buffer = bufnr,
+      x = 0,
+      y = block.end_line,  -- Place after the code block
+      max_width = config.max_width_window_percentage,
+      max_height = config.max_height_window_percentage,
+      inline = true,
+      with_virtual_padding = true,
+    }
+    
+    -- Use the standard image integration
+    if image_integration.render_inline(bufnr, image_path, config) then
+      utils.log_debug(string.format("Rendered markdown image at line %d for block %s", block.end_line, block_id))
+    else
+      utils.log_error("Failed to render inline image for markdown block")
+    end
+  end
 end
 
 -- Clear all rendered images in markdown buffer
@@ -243,7 +230,7 @@ function M.clear_markdown_renders(bufnr)
   -- Clear all extmarks
   api.nvim_buf_clear_namespace(bufnr, md_namespace, 0, -1)
   
-  -- Clear from image.nvim
+  -- Clear images
   local image_integration = require("mermaider.image_integration")
   image_integration.clear_image(bufnr, api.nvim_get_current_win())
   
