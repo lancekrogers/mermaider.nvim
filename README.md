@@ -1,8 +1,10 @@
+<p align="center">
+  <img src="docs/assets/hero.jpg" width="880" alt="Neovim buffer with Mermaid source and an inline flowchart preview">
+</p>
+
 # mermaider.nvim
 
 **Mermaid diagrams, in the buffer, not in a browser tab.**
-
-![Mermaid graph rendered inside Neovim](examples/image.png)
 
 A Neovim plugin that runs [mermaid-cli](https://github.com/mermaid-js/mermaid-cli)
 and shows the PNG through [image.nvim](https://github.com/3rd/image.nvim).
